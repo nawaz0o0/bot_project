@@ -1,3 +1,5 @@
+
+import os 
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import json
@@ -155,7 +157,7 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 def main():
-    bot_token = '7241324534:AAGr5nB2LOghe4itEpfhaPNvjhDYVuCtEyE'  # Replace this with your real bot token
+    bot_token = os.getenv("'7241324534:AAGr5nB2LOghe4itEpfhaPNvjhDYVuCtEyE'  # Replace this with your real bot token")
     app = Application.builder().token(bot_token).build()
 
     app.add_handler(CommandHandler("start", start))
