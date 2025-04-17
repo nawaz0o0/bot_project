@@ -1,9 +1,7 @@
-
 import os 
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import json
-import os
 from datetime import datetime, timedelta
 import re
 from asyncio import Lock
@@ -24,6 +22,7 @@ def save_user_data(data):
     with open(USER_DATA_FILE, 'w') as f:
         json.dump(data, f)
 
+# /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     all_user_data = load_user_data()
@@ -40,6 +39,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Note: For continuous tracking, please use the 'Share Live Location' feature in Telegram."
     )
 
+# Handle live/one-time location
 async def handle_location(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         loc = update.message.location
@@ -74,7 +74,6 @@ async def handle_location(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     f"Longitude: {loc.longitude}"
                 )
             
-            # Save to persistent storage
             all_user_data = load_user_data()
             all_user_data[user_id] = context.user_data['location']
             save_user_data(all_user_data)
@@ -82,6 +81,7 @@ async def handle_location(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"Error in handle_location: {e}")
         await update.message.reply_text("Failed to process location. Please try again.")
 
+# Handle edited live location messages
 async def handle_edited_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         if update.edited_message and update.edited_message.location:
@@ -95,7 +95,6 @@ async def handle_edited_message(update: Update, context: ContextTypes.DEFAULT_TY
                 context.user_data['location']["latitude"] = loc.latitude
                 context.user_data['location']["longitude"] = loc.longitude
                 
-                # Save to persistent storage
                 all_user_data = load_user_data()
                 all_user_data[user_id] = context.user_data['location']
                 save_user_data(all_user_data)
@@ -109,6 +108,7 @@ async def handle_edited_message(update: Update, context: ContextTypes.DEFAULT_TY
         print(f"Error in handle_edited_message: {e}")
         await update.edited_message.reply_text("Failed to process location update. Please try again.")
 
+# Handle user messages like "where am I?"
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
     user_id = str(update.effective_user.id)
@@ -148,6 +148,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Please ask about your location or share your live location.")
 
+# Error handling
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     error_msg = f"Error occurred: {context.error}"
     print(error_msg)
@@ -156,8 +157,9 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Sorry, something went wrong. Please try again or contact support."
         )
 
+# Main entry
 def main():
-    bot_token = os.getenv("'7241324534:AAGr5nB2LOghe4itEpfhaPNvjhDYVuCtEyE'  # Replace this with your real bot token")
+    bot_token = os.getenv("BOT_TOKEN")
     app = Application.builder().token(bot_token).build()
 
     app.add_handler(CommandHandler("start", start))
